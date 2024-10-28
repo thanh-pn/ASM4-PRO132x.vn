@@ -59,18 +59,18 @@ public class SavingsAccount extends Account implements ReportService, Withdraw, 
 
     @Override
     public void transfer(Account receiveAccount, double amount) throws IOException {
-//        if (isAccepted(amount)) {
-//            if (receiveAccount.getType() == "DEPOSIT"){
-//                receiveAccount.setBalance(getBalance() + amount);
-//                AccountDao.update(receiveAccount);
-//                System.out.println("Chuyển tiền thành công, biên lại giao dịch");
-//
-//            }if (receiveAccount.getType() == "TRANSFERS"){
-//                System.out.println("Chuyển tiền thành công, biên lại giao dịch");
-//                receiveAccount.setBalance(getBalance() - amount);
-//                AccountDao.update(receiveAccount);
-//            }
-//        }
+        if (isAccepted(amount)) {
+            if (receiveAccount.getType() == "DEPOSIT"){
+                receiveAccount.setBalance(getBalance() + amount);
+                AccountDao.update(receiveAccount);
+                System.out.println("Chuyển tiền thành công, biên lại giao dịch");
+
+            }if (receiveAccount.getType() == "TRANSFERS"){
+                System.out.println("Chuyển tiền thành công, biên lại giao dịch");
+                receiveAccount.setBalance(getBalance() - amount);
+                AccountDao.update(receiveAccount);
+            }
+        }
     }
 
 }
