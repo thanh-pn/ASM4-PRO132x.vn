@@ -10,6 +10,7 @@ import com.funix.fx21990.asm4.utils.Utils;
 import java.io.IOException;
 
 public class SavingsAccount extends Account implements ReportService, Withdraw,ITrasfer {
+    private static final long serialVersionUID = 6899794670413630308L; // Cập nhật giá trị này
     private static final double SAVINGS_ACCOUNT_MAX_WITHDRAW = 5000000;
     private static final double SAVINGS_ACCOUNT_MIN_WITHDRAW = 50000;
 

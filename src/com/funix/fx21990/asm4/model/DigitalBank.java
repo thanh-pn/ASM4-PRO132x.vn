@@ -21,12 +21,11 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
     private List<Customer> customers = new ArrayList<>();
     private CustomersDao customersDao;
     private AccountDao accountDao;
-    private TransactionDao transactionDao;
 
     public DigitalBank() {
         customersDao = new CustomersDao();
         accountDao = new AccountDao();
-        transactionDao = new TransactionDao();
+        TransactionDao transactionDao = new TransactionDao();
     }
 
     @Override
