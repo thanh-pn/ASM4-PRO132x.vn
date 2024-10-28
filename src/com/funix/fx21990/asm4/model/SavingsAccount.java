@@ -9,7 +9,8 @@ import com.funix.fx21990.asm4.utils.Utils;
 
 import java.io.IOException;
 
-public class SavingsAccount extends Account implements ReportService, Withdraw{
+public class SavingsAccount extends Account implements ReportService, Withdraw, ITrasfer{
+    private static final long serialVersionUID = 6899794670413630308L; // Cập nhật giá trị này
     private static final double SAVINGS_ACCOUNT_MAX_WITHDRAW = 5000000;
     private static final double SAVINGS_ACCOUNT_MIN_WITHDRAW = 50000;
 
@@ -55,8 +56,9 @@ public class SavingsAccount extends Account implements ReportService, Withdraw{
         System.out.println("So tien khong du de thuc hien giao dich");
         return false;
     }
-//    @Override
-//    public void transfer(Account receiveAccount, double amount) throws IOException {
+
+    @Override
+    public void transfer(Account receiveAccount, double amount) throws IOException {
 //        if (isAccepted(amount)) {
 //            if (receiveAccount.getType() == "DEPOSIT"){
 //                receiveAccount.setBalance(getBalance() + amount);
@@ -69,6 +71,6 @@ public class SavingsAccount extends Account implements ReportService, Withdraw{
 //                AccountDao.update(receiveAccount);
 //            }
 //        }
-//    }
+    }
 
 }

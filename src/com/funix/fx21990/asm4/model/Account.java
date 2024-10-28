@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class Account implements Serializable, ReportService {
 
     //Serializable: hỗ trợ đọc/ ghi object
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; // Đảm bảo serialVersionUID đúng
     private String customerID;
     private String accountNumber;
     private double balance;

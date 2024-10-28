@@ -17,16 +17,15 @@ import java.util.Scanner;
 import java.util.Spliterator;
 
 
-public class DigitalBank extends Bank implements IReport, ITrasfer {
+public class DigitalBank extends Bank {
     private List<Customer> customers = new ArrayList<>();
     private CustomersDao customersDao;
     private AccountDao accountDao;
-    private TransactionDao transactionDao;
 
     public DigitalBank() {
         customersDao = new CustomersDao();
         accountDao = new AccountDao();
-        transactionDao = new TransactionDao();
+        TransactionDao transactionDao = new TransactionDao();
     }
 
     @Override
@@ -42,28 +41,19 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
         List<Customer> customers = customersDao.list();
         if (customers.isEmpty()) {//isEmpty: khi chuỗi trống trả về true và ngược lại
             System.out.println("Khong tìm thấy khách hàng trong danh sách");
+            return;
         }
         List<Account> accounts = accountDao.list();
+
+        //Thêm tài khoản vào từng khách hàng
         for (Customer customer : customers) {
             accounts.stream()
                     .filter(account -> customer.getCustomerId().equals(account.getCustomerID()))
                     .forEach(customer::addAccount);
         }
+
+        //Hiển thị thông tin khách hàng
         customers.forEach(Customer::disPlayInformation);
-//        else {
-//            List<Account> accounts = accountDao.list();
-//            for (Customer customer : customers) {
-//                for (Account account : accounts) {
-//                    if (customer.getCustomerId().equals(account.getCustomerID())) {
-//                        customer.addAccount(account);
-//                        //AccountDao.update(account);
-//                    }
-//                }
-//            }
-//            for (Customer customer : customers) {
-//                customer.disPlayInformation();
-//            }
-//        }
     }
 
     public void addCustomers(String fileName) throws IOException {
@@ -220,17 +210,6 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
                 }
             }
         }
-    }
-
-
-    @Override
-    public void transfer(Account receiveAccount, double amount) {
-
-    }
-
-    @Override
-    public void IReport(double amount, Transation type, Account receiveAccount) {
-
     }
 }
 
