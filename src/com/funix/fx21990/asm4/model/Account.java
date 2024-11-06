@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
-public class Account implements Serializable, ReportService {
+public class Account implements Serializable {
 
     //Serializable: hỗ trợ đọc/ ghi object
     private static final long serialVersionUID = 1L; // Đảm bảo serialVersionUID đúng
@@ -82,10 +82,8 @@ public class Account implements Serializable, ReportService {
     //tạo ra thêm một giao dịch cho account và cập nhật số dư tài khoản.
     public void crateTransaction(double amount, String time, boolean status, String type) throws IOException {
         Transation transation = new Transation(amount, time, status, type, accountNumber);
-        TransactionDao.save(transations);
-        //cạp nhat so du
-        balance += amount;
-        AccountDao.update(this);
+        transations.add(transation);
+        TransactionDao.update(transation);
     }
 
     public void input(Scanner scanner) {
@@ -104,9 +102,5 @@ public class Account implements Serializable, ReportService {
             return accountNumber + " |        " + type + " |               " + formatter.format(balance) + "đ";
         }
         return accountNumber + " |        " + "     |            " + formatter.format(balance) + "đ";
-    }
-    @Override
-    public void log(double amount) {
-
     }
 }

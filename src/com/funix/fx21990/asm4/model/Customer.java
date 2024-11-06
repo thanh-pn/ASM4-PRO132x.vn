@@ -67,7 +67,7 @@ public class Customer extends User implements Serializable {
     }
 
     //Nhập số tài khoản (lấy danh sách accounts từ getAccounts để kiểm tra tài khoản có tồn tại hay không và gọi hàm rút tiền account
-    public void withdraw(Scanner scanner) {
+    public void withdraw(Scanner scanner) throws IOException {
         List<Account> accounts = getAccounts();
         if (!accounts.isEmpty()) {
             Account account;
@@ -99,76 +99,82 @@ public class Customer extends User implements Serializable {
 
     public void tranfers(Scanner scanner, String customerID) throws IOException {
         List<Account> accounts = AccountDao.list();
-        //số tài khoản người gửi
-        String accountNumber = "";
-        boolean validSenderAccount = false;
-        while (!validSenderAccount) {
-            System.out.print("Nhập số tài khoản");
-            accountNumber = scanner.nextLine();
-            for (Account account : accounts) {
-                if (account.getCustomerID().equals(customerID)) {
-                    if (account.getAccountNumber().equals(accountNumber)) {
-                        validSenderAccount = true;
-                        break;
-                    }
-                }
-            }
-            if (!validSenderAccount) {
-                System.out.println("Số tài khoản không tồn tại , vui lòng nhập lại");
-            }
+        String accountNumber = getvalidAccountNumber(scanner, accounts, customerID, true);
+        String receiveAccount = getvalidAccountNumber(scanner, accounts, customerID, false);
+
+        double balance = balanceFromUser();
+        if (!isSufficientBalance(accounts, accountNumber, balance)) {
+            System.out.println("Số dư không đủ thực hiện giao dịch. ");
+            return;
         }
-        //số tài khoản người nhận
-        String receiveAccount = "";
-        boolean validReceiveAccount = false;
-        while (!validReceiveAccount) {
-            System.out.print("Nhập số tài khoản người nhận :");
-            receiveAccount = scanner.nextLine();
+        confirmAndTransfer(scanner, accounts, accountNumber, receiveAccount, balance);
+    }
+
+    public String getvalidAccountNumber(Scanner scanner, List<Account> accounts, String customerID, boolean isSender) {
+        String accountNumber = "";
+        boolean validAccount = false;
+        while (!validAccount) {
+            System.out.print("Nhập số tài khoản " + (isSender ? "người gửi" : "người nhận ") + ": ");
+            accountNumber = scanner.nextLine();
+
             for (Account account : accounts) {
-                if (account.getAccountNumber().equals(receiveAccount)) {
-                    if (account.getAccountNumber().equals(accountNumber)) {
-                        System.out.println("Số tài khoản người gửi và người nhận không được trùng nhau");
-                        break;
+                if (account.getAccountNumber().equals(accountNumber)) {
+                    if (isSender && account.getCustomerID().equals(customerID)) {
+                        validAccount = true;
+                    } else if (!isSender && !account.getCustomerID().equals(customerID)) {
+                        validAccount = true;
+                    } else {
+                        System.out.println("Số tài khỏan không hợp lệ, vui lòng nhập lại");
                     }
-                    if (account.getCustomerID().equals(customerID)) {
-                        System.out.println("Mã số khách hàng phải khác nhau");
-                        break;
-                    }
-                    validReceiveAccount = true;
                     break;
                 }
             }
-            if (!validReceiveAccount) {
-                System.out.println("Số tài khoản không tồn tại , vui lòng nhập lại");
+            if (!validAccount) {
+                System.out.println("Số tài khoản không tồn tại, vui lòng nhập lại");
             }
         }
+        return accountNumber;
+    }
+
+    public boolean isSufficientBalance(List<Account> accounts, String accountNumber, double amount) {
         for (Account account : accounts) {
-            if (account.getAccountNumber().equals(receiveAccount)) {
-                for (Customer customer : CustomersDao.list()) {
-                    if (account.getCustomerID().equals(customer.getCustomerId())) {
-                        System.out.println("Gửi số tiền đến tài khoản: " + receiveAccount + " | " + customer.getName());
-                    }
-                }
+            if (account.getAccountNumber().equals(accountNumber)) {
+                return account.getBalance() >= amount;
             }
         }
-        double balance = balanceFromUser();
-        System.out.print("Bạn có chắc chắn muốn chuyển" + balance + "từ tài khoản [" + accountNumber + "]" + "đến tài khoản [" + receiveAccount + "]" + "Y/N");
+        return false;
+    }
+
+    public void confirmAndTransfer(Scanner scanner, List<Account> accounts, String accountNumber, String receiveAccount, double amount) throws IOException {
+        System.out.print("Bạn có chắc chắn muốn chuyển " + amount + " từ tài khoản [" + accountNumber + "] đến tài khoản [" + receiveAccount + "]? Y/N: ");
         String confirmation = scanner.nextLine();
         if (confirmation.equalsIgnoreCase("y")) {
-            for (Account account : accounts) {
-                if (account.getAccountNumber().equals(accountNumber)) {
-                    account.setType("TRANSFERS");
-//                    if (account instanceof SavingsAccount) {
-//                        ((SavingsAccount) account).transfer(account, balance);
-//                    }
-                } else if (account.getAccountNumber().equals(receiveAccount)) {
-                    account.setType("DEPOSIT");
-//                    if (account instanceof SavingsAccount) {
-//                        ((SavingsAccount) account).transfer(account, balance);
-//                    }
-                }
-            }
+            performTransfer(accounts, accountNumber, receiveAccount, amount);
         } else {
             System.out.println("Chuyển tiền bị hủy");
+        }
+    }
+
+    public void performTransfer(List<Account> accounts, String accountNumber, String receiveAccount, double amount) throws IOException {
+        Account senderAccount = null;
+        Account receiverAccount = null;
+        for (Account account : accounts) {
+            if (account.getAccountNumber().equals(accountNumber)) {
+                senderAccount = account;
+            } else if (account.getAccountNumber().equals(receiveAccount)) {
+                receiverAccount = account;
+            }
+        }
+        if (senderAccount instanceof SavingsAccount && receiverAccount instanceof SavingsAccount ) {
+            try {
+                ((SavingsAccount) senderAccount).transfer(receiverAccount,amount);
+                ((SavingsAccount) senderAccount).logTransfer(amount,accountNumber,receiveAccount);
+
+                ((SavingsAccount) receiverAccount).deposit(receiverAccount, amount);
+
+            }catch (IOException e){
+                System.err.println("Lỗi trong quá trình chuyển tiền" + e.getMessage());
+            }
         }
     }
 

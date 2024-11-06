@@ -78,6 +78,6 @@ public class Transation implements Serializable {
 
     @Override
     public String toString() {
-        return "[GD]   " + type + accountNumber + " |      " + amount + "   |" + time + "| " + Utils.getAdvancedOTP(id) + "-" + Utils.getAdvancedOTP(id);
+        return "[GD]   " + accountNumber + " |      "+ type  +"  |"+ amount + "   |" + time + "| " + Utils.getAdvancedOTP(id) + Utils.getAdvancedOTP(id);
     }
 }

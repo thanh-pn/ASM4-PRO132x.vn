@@ -28,7 +28,6 @@ public class TransactionDao {
             updateTransaction.add(editTransaction);
         }else{
             updateTransaction = new ArrayList<>();
-
             for (Transation transation : transations){
                 if (transation.getAccountNumber().equals(editTransaction.getAccountNumber())){
                     updateTransaction.add(editTransaction);

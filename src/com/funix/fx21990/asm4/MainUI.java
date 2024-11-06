@@ -2,11 +2,13 @@ package com.funix.fx21990.asm4;
 
 import com.funix.fx21990.asm4.dao.AccountDao;
 import com.funix.fx21990.asm4.dao.CustomersDao;
+import com.funix.fx21990.asm4.dao.TransactionDao;
 import com.funix.fx21990.asm4.model.*;
 import com.funix.fx21990.asm4.service.BinaryFileService;
 import com.funix.fx21990.asm4.service.TextFileService;
 
 import javax.naming.BinaryRefAddr;
+import javax.sound.midi.MidiFileFormat;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,8 +19,6 @@ import java.util.Scanner;
 public class MainUI {
     private static final DigitalBank activeBank = new DigitalBank();
     private static final Scanner scanner = new Scanner(System.in);
-    public static final String TYPE_SAVINGS = "SAVINGS";
-
 
     public static void main(String[] args) {
         initUI();
@@ -63,7 +63,8 @@ public class MainUI {
                         initUI();
                         break;
                     case 6:
-                        //  historyTransaction();
+                        historyTransaction();
+                        initUI();
                         break;
                     case 0:
                         System.out.println("Cam on ban da su dung dich vu cua chung toi!");
@@ -109,7 +110,7 @@ public class MainUI {
             if (customer.getCustomerId().equals(customerID)) {
                 customer.disPlayInformation();
                 customerFound = true;//đánh dấu khách hàng đã tìm thấy
-                customer.tranfers(scanner,customerID);
+                customer.tranfers(scanner, customerID);
                 break;//dừng vòng lặp khi tìm thấy khách hàng
             }
         }
@@ -117,69 +118,71 @@ public class MainUI {
             System.out.println("Không tìm thấy khách hàng");
         }
     }
-//            if (customer.getCustomerId().equals(customerID)){
-//                customer.disPlayInformation();
-//                System.out.println(accounts);
-//             //   customer.tranfers(scanner);
-//            }else {
-//                System.out.println("Khách hàng không tồn tại");
-//            }
 
+    public static void withdraw() throws IOException {
+        System.out.print("Nhập mã số khách hàng :");
+        String customerID = scanner.nextLine();
+        boolean customerFound = false;
+        List<Customer> customers = CustomersDao.list();
+        for (Customer customer : customers) {
+            List<Account> accounts = AccountDao.list();
+            accounts.stream()
+                    .filter(account -> customer.getCustomerId().equals(account.getCustomerID()))
+                    .forEach(customer::addAccount);
+            if (customer.getCustomerId().equals(customerID)) {
+                customer.disPlayInformation();
+                customer.withdraw(scanner);
+                customerFound = true;
+                break;
+            }
+        }
+        if (!customerFound) {
+            System.out.println("Khách hàng không tồn tại");
+        }
 
-private static void withdraw() throws IOException {
-    System.out.print("Nhập mã số khách hàng :");
-    String customerID = scanner.nextLine();
-    List<Customer> customers = CustomersDao.list();
-    for (Customer customer : customers) {
-        List<Account> accounts = AccountDao.list();
-        accounts.stream()
-                .filter(account -> customer.getCustomerId().equals(account.getCustomerID()))
-                .forEach(customer::addAccount);
-        if (customer.getCustomerId().equals(customerID)) {
-            customer.disPlayInformation();
-            customer.withdraw(scanner);
-        } else {
+    }
+
+//    public class InvalidCustomerIdException extends RuntimeException {
+//        public InvalidCustomerIdException(String message) {
+//            super(message);
+//        }
+//    }
+
+    public static void historyTransaction() {
+        System.out.print("Nhập mã số khách hàng :");
+        String customerID = scanner.nextLine();
+        boolean customerFound = false;
+        List<Customer> customers = CustomersDao.list();
+        for (Customer customer : customers) {
+            List<Account> accounts = AccountDao.list();
+            accounts.stream()
+                    .filter(account -> customer.getCustomerId().equals(account.getCustomerID()))
+                    .forEach(customer::addAccount);
+            if (customer.getCustomerId().equals(customerID)) {
+                customer.disPlayInformation();
+                customerFound = true; //
+                List<Transation> transations = TransactionDao.list();
+                for (Transation transation : transations) {
+                    for (Account account : customer.getAccounts()) {
+                        if (account.getAccountNumber().equals(transation.getAccountNumber())) {
+                            //kiểm tra các tài khoản thuộc về khách hàng được khớp, ngăn không cho các giao dịch từ những khách hàng khác được hiển thị.
+                            //Tránh sử dụng Danh sách tài khoản toàn cầu : Tránh sử dụng AccountDao.list()trong bối cảnh này
+                            // vì nó sẽ truy xuất tất cả tài khoản và không lọc chúng dựa trên khách hàng.
+                            System.out.println(transation.toString());
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        if (!customerFound) {
             System.out.println("Khách hàng không tồn tại");
         }
     }
-}
 
-private static String accountNumberFromUser() {
-    System.out.println("Vui lòng nhập số tài khoản");
-    String stk = scanner.nextLine();
-    while (stk.length() != 6) {
-        System.out.println("Số tài khoản phải gồm 6 chứ số");
-        System.out.println("Vui lòng nhập lại");
-        System.out.println("Hoac chon no de thoat");
-        stk = scanner.nextLine();
-        if (stk.equalsIgnoreCase("No")) {
-            System.out.println("Bạn đã thoát");
-            initUI();
-            break;
-        }
-    }
-    return stk;
-}
-
-private static double balanceFromUser() {
-    while (true) {
-        System.out.println("Nhap so tien ");
-        String input = scanner.nextLine();
-        if (input.isEmpty()) {
-            System.out.println("Vui long nhap so tien");
-            continue;
-        }
-        try {
-            double amount = Double.parseDouble(input);
-            if (amount <= 50000) {
-                System.out.println("So tien toi thieu 50000");
-                continue;
-            }
-            return amount;
-        } catch (NumberFormatException e) {
-            System.out.println("Vui long nhap so tien hop le");
-        }
-    }
-}
-
+//    public void validateCustomerID(String customerID) throws InvalidCustomerIdException {
+//        if (customerID.length() != 12) {
+//            throw new InvalidCustomerIdException("Customer ID phải gồm 12 chũ số");
+//        }
+//    }
 }

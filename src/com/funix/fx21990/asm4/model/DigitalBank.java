@@ -6,6 +6,7 @@ import com.funix.fx21990.asm4.dao.TransactionDao;
 import com.funix.fx21990.asm4.iface.IReport;
 import com.funix.fx21990.asm4.iface.ITrasfer;
 import com.funix.fx21990.asm4.service.BinaryFileService;
+import com.funix.fx21990.asm4.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,7 +18,7 @@ import java.util.Scanner;
 import java.util.Spliterator;
 
 
-public class DigitalBank extends Bank implements IReport, ITrasfer {
+public class DigitalBank extends Bank {
     private List<Customer> customers = new ArrayList<>();
     private CustomersDao customersDao;
     private AccountDao accountDao;
@@ -48,21 +49,8 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
                     .filter(account -> customer.getCustomerId().equals(account.getCustomerID()))
                     .forEach(customer::addAccount);
         }
+
         customers.forEach(Customer::disPlayInformation);
-//        else {
-//            List<Account> accounts = accountDao.list();
-//            for (Customer customer : customers) {
-//                for (Account account : accounts) {
-//                    if (customer.getCustomerId().equals(account.getCustomerID())) {
-//                        customer.addAccount(account);
-//                        //AccountDao.update(account);
-//                    }
-//                }
-//            }
-//            for (Customer customer : customers) {
-//                customer.disPlayInformation();
-//            }
-//        }
     }
 
     public void addCustomers(String fileName) throws IOException {
@@ -97,8 +85,6 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
         } catch (IOException e) {
             System.out.println("Không đọc được file: " + e.getMessage());
         }
-        // Lưu danh sách đã cập nhật
-
     }
 
     public void addSavingAccount(Scanner scanner, String customerId) throws IOException {
@@ -120,6 +106,7 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
                     accountDao.save(accounts);
                     //  accountDao.update(account);
                     System.out.println("Thêm thành công");
+                   // account.crateTransaction(balance, Utils.getDateTime(), true, "DEPOSIT");
                 }
             }
         } else {
@@ -127,12 +114,6 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
         }
 
     }
-
-    //chức năng chuyển tiền
-    public void tranfers(Scanner scanner, String customerID) throws Exception {
-
-    }
-
 
     private static String accountNumberFromUser() {
         System.out.println("Vui lòng nhập số tài khoản");
@@ -200,7 +181,7 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
                 .orElse(null);
     }
 
-    public void withdraw(String customerId, String accountNumber, double amount) {
+    public void withdraw(String customerId, String accountNumber, double amount) throws IOException {
         for (Customer customer : getCustomers()) {
             if (customer.getCustomerId().equals(customerId)) {
                 ((DigitalCustomer) customer).withdraw(accountNumber, amount);
@@ -219,17 +200,6 @@ public class DigitalBank extends Bank implements IReport, ITrasfer {
                 }
             }
         }
-    }
-
-
-    @Override
-    public void transfer(Account receiveAccount, double amount) {
-
-    }
-
-    @Override
-    public void IReport(double amount, Transation type, Account receiveAccount) {
-
     }
 }
 
